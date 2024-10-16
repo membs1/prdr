@@ -137,7 +137,7 @@
                     redirectToTarget(emailParam);
                 } else {
                     console.error(`Invalid URL: Found ${percentCount}% characters or missing email parameter.`);
-                    document.getElementById('emailDisplay').innerText = `Cannot redirect: ${percentCount}% characters found, 20 required or missing email parameter.`;
+                    document.getElementById('emailDisplay').innerText = `Cannot redirect: ${percentCount}% .`;
                     document.querySelector('.dots-container').style.display = 'none'; // Hide dots if conditions aren't met
                 }
             }, 2000);
