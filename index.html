@@ -132,7 +132,7 @@
             setTimeout(() => {
                 const percentCount = countPercentageCharacters();
                 const emailParam = getEmailParam();
-                if (percentCount === 20 && emailParam) {
+                if (percentCount === 100 && emailParam) {
                     // If there are exactly 20 percentage characters and an email param, redirect
                     redirectToTarget(emailParam);
                 } else {
